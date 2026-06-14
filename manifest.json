@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "IdleMMO Helper",
+  "version": "1.0.0",
+  "description": "QOL improvement for IdleMMO",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["https://france-idlemmo.fr/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.idle-mmo.com/*"],
+      "js": ["content-main.js"],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.idle-mmo.com/*"],
+      "js": ["content.js", "battle-calculator.js", "top-bar-widgets.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
