@@ -12,6 +12,18 @@
   let pricesRequested = false;
   let vendorCheckEnabled = false;
 
+  let features = window.IdleMMOHelperSettings.getDefaultFeatures();
+
+  window.IdleMMOHelperSettings.loadFeatureSettings((loaded) => {
+    features = loaded;
+    scheduleScan();
+  });
+
+  window.IdleMMOHelperSettings.onFeatureSettingsChanged((loaded) => {
+    features = loaded;
+    scheduleScan();
+  });
+
   function formatNumber(num) {
     return Math.floor(num).toLocaleString('en-US');
   }
@@ -252,29 +264,49 @@
   }
 
   function scan() {
-    applyNavIconColors();
-    buildCharacterSwitchButtons();
-    applySkillListReverse();
+    if (features.navIconColors) {
+      applyNavIconColors();
+    } else {
+      removeNavIconColors();
+    }
 
-    const rows = document.querySelectorAll('div.flex.justify-between.items-center');
-    rows.forEach((row) => {
-      if (row.classList.contains(ROW_MARKER_CLASS)) return;
-      const label = row.querySelector(':scope > span.font-medium.text-gray-200');
-      if (label && label.textContent.trim() === 'Price Range') {
-        processPriceRangeRow(row);
-      }
-    });
+    if (features.characterSwitchButtons) {
+      buildCharacterSwitchButtons();
+    } else {
+      const panel = document.querySelector(`.${CHARACTER_PANEL_CLASS}`);
+      if (panel) panel.remove();
+    }
 
-    const listingRows = document.querySelectorAll('div.flex.items-center.justify-between.px-4');
-    listingRows.forEach((row) => {
-      if (row.classList.contains(LISTING_ROW_MARKER_CLASS)) return;
-      const label = row.querySelector('span.truncate.font-bold');
-      if (label && label.textContent.trim() === 'Price Per Item') {
-        processPricePerItemRow(row);
-      }
-    });
+    if (features.skillListReverse) {
+      applySkillListReverse();
+    } else {
+      removeSkillListReverse();
+    }
 
-    if (location.pathname === '/inventory') {
+    if (features.netMarketTax) {
+      const rows = document.querySelectorAll('div.flex.justify-between.items-center');
+      rows.forEach((row) => {
+        if (row.classList.contains(ROW_MARKER_CLASS)) return;
+        const label = row.querySelector(':scope > span.font-medium.text-gray-200');
+        if (label && label.textContent.trim() === 'Price Range') {
+          processPriceRangeRow(row);
+        }
+      });
+
+      const listingRows = document.querySelectorAll('div.flex.items-center.justify-between.px-4');
+      listingRows.forEach((row) => {
+        if (row.classList.contains(LISTING_ROW_MARKER_CLASS)) return;
+        const label = row.querySelector('span.truncate.font-bold');
+        if (label && label.textContent.trim() === 'Price Per Item') {
+          processPricePerItemRow(row);
+        }
+      });
+    } else {
+      document.querySelectorAll(`.${ROW_MARKER_CLASS}`).forEach((row) => row.remove());
+      document.querySelectorAll(`.${LISTING_ROW_MARKER_CLASS}`).forEach((row) => row.remove());
+    }
+
+    if (location.pathname === '/inventory' && features.vendorCheck) {
       ensureVendorToggle();
 
       if (vendorCheckEnabled) {
@@ -283,6 +315,10 @@
       } else {
         document.querySelectorAll(`.${VENDOR_CHECK_BADGE_CLASS}`).forEach((badge) => badge.remove());
       }
+    } else {
+      const toggle = document.getElementById(VENDOR_TOGGLE_ID);
+      if (toggle) toggle.remove();
+      document.querySelectorAll(`.${VENDOR_CHECK_BADGE_CLASS}`).forEach((badge) => badge.remove());
     }
   }
 
@@ -337,6 +373,15 @@
       if (className && NAV_ICON_KNOWN_CLASSES.includes(className)) {
         link.classList.add(`${NAV_ICON_CLASS_PREFIX}${className}`);
       }
+    });
+  }
+
+  function removeNavIconColors() {
+    const links = document.querySelectorAll('[id^="section-"] li a');
+    links.forEach((link) => {
+      NAV_ICON_KNOWN_CLASSES.forEach((cls) => {
+        link.classList.remove(`${NAV_ICON_CLASS_PREFIX}${cls}`);
+      });
     });
   }
 
@@ -404,6 +449,17 @@
     if (ulList && ulList.style.flexDirection !== 'column-reverse') {
       ulList.style.display = 'flex';
       ulList.style.flexDirection = 'column-reverse';
+    }
+  }
+
+  function removeSkillListReverse() {
+    const targetNode = document.querySelector('[x-data="skill_list"]');
+    if (!targetNode) return;
+
+    const ulList = targetNode.querySelector('ul[role="list"]');
+    if (ulList && ulList.style.flexDirection === 'column-reverse') {
+      ulList.style.display = '';
+      ulList.style.flexDirection = '';
     }
   }
 
