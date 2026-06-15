@@ -253,7 +253,7 @@
 
   function scan() {
     applyNavIconColors();
-    applyCharacterSelectorFixed();
+    buildCharacterSwitchButtons();
     applySkillListReverse();
 
     const rows = document.querySelectorAll('div.flex.justify-between.items-center');
@@ -340,14 +340,60 @@
     });
   }
 
-  function applyCharacterSelectorFixed() {
-    const selector = document.querySelector('[x-data="character_selector"]');
-    if (!selector || selector.style.position === 'fixed') return;
+  const CHARACTER_PANEL_CLASS = 'idlemmo-helper-character-panel';
+  const CHARACTER_SWITCH_BUTTON_CLASS = 'idlemmo-helper-character-switch-button';
 
-    selector.style.position = 'fixed';
-    selector.style.zIndex = '2';
-    selector.style.width = '83%';
-    selector.style.marginTop = '26px';
+  function toggleCharacterDropdown() {
+    const toggle = document.querySelector('[x-on\\:click*="characterDropdown"], [\\@click*="characterDropdown"]');
+    if (toggle) toggle.click();
+  }
+
+  let characterDropdownTriggered = false;
+
+  function buildCharacterSwitchButtons() {
+    const gameContainer = document.querySelector('#game-container');
+    if (!gameContainer) return;
+
+    if (document.querySelector(`.${CHARACTER_PANEL_CLASS}`)) return;
+
+    const dropdown = document.querySelector('[x-show="characterDropdown"]');
+    if (!dropdown) return;
+
+    const forms = dropdown.querySelectorAll('form[action*="/character/switch/"]');
+    if (!forms.length) {
+      if (!characterDropdownTriggered) {
+        // Character list is lazy-loaded; open the dropdown once to trigger it.
+        characterDropdownTriggered = true;
+        toggleCharacterDropdown();
+      }
+      return;
+    }
+
+    const panel = document.createElement('div');
+    panel.className = `flex flex-wrap justify-end gap-2 mb-4 ${CHARACTER_PANEL_CLASS}`;
+
+    forms.forEach((form) => {
+      const nameSpan = form.querySelector('span.font-bold');
+      const name = nameSpan ? nameSpan.textContent.trim() : 'Character';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = `Switch to ${name}`;
+      button.className = `rounded bg-black/10 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black/40 disabled:opacity-40 disabled:cursor-not-allowed ${CHARACTER_SWITCH_BUTTON_CLASS}`;
+      button.disabled = !!form.querySelector('button[type="submit"]')?.disabled;
+
+      button.addEventListener('click', () => {
+        if (form.requestSubmit) {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+      });
+
+      panel.appendChild(button);
+    });
+
+    gameContainer.before(panel);
   }
 
   function applySkillListReverse() {
