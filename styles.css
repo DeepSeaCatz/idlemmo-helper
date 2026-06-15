@@ -1,0 +1,92 @@
+/* Character */
+a.idlemmo-helper-nav-profile svg {
+    color: #32c3f9 !important;
+}
+a.idlemmo-helper-nav-inventory svg {
+    color: #ff970d !important;
+}
+#section-character li:nth-child(3) button svg {
+    color: #ea4335 !important;
+}
+
+/* Skills */
+a.idlemmo-helper-nav-woodcutting svg {
+    color: #55c255 !important;
+}
+
+a.idlemmo-helper-nav-mining svg {
+    color: #c2833c !important;
+}
+
+a.idlemmo-helper-nav-fishing svg {
+    color:#799edc !important;
+}
+
+a.idlemmo-helper-nav-alchemy svg {
+    color: #994d99 !important;
+}
+
+a.idlemmo-helper-nav-smelting svg {
+     color: #ad4b4b !important;
+}
+
+a.idlemmo-helper-nav-cooking svg {
+    color:#c1862d !important;
+}
+
+a.idlemmo-helper-nav-forge svg {
+    color: #29b294 !important;
+}
+
+a.idlemmo-helper-nav-meditation svg {
+    color:#d675a8 !important;
+}
+
+a.idlemmo-helper-nav-construction svg {
+    color:#c2521b !important;
+}
+
+
+/* Play */
+
+a.idlemmo-helper-nav-pets svg {
+    color:#fc7f30 !important;
+}
+
+a.idlemmo-helper-nav-museum svg {
+    color:#ffffff !important
+}
+
+a.idlemmo-helper-nav-quests svg {
+    color:#00e0ff !important
+}
+
+a.idlemmo-helper-nav-guilds svg {
+    color:#65c265 !important;
+}
+
+a.idlemmo-helper-nav-leagues svg {
+    color: #ffff00 !important;
+}
+
+
+/* Combat */
+a.idlemmo-helper-nav-battle svg {
+    color:#e93636 !important;
+}
+a.idlemmo-helper-nav-dungeon svg {
+    color:#e78b25 !important;
+}
+a.idlemmo-helper-nav-world-boss svg {
+    color:#3de443 !important;
+}
+
+
+/* Trade */
+a.idlemmo-helper-nav-merchants svg {
+    color:#6ab7ec !important;
+}
+
+#section-trade li:nth-child(2) a svg {
+    color:#e7d325 !important;
+}
