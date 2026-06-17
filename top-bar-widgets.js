@@ -27,13 +27,20 @@
     );
   }
 
-  function buildBadge(id, prefix, initialText) {
+  function buildBadge(id, prefix, initialText, href) {
     const wrap = document.createElement('div');
     wrap.className = 'block';
     wrap.id = id;
 
     const button = document.createElement('div');
     button.className = 'flex items-center px-4 py-2 text-sm font-bold bg-gray-800 rounded-full whitespace-nowrap';
+
+    if (href) {
+      button.style.cursor = 'pointer';
+      button.addEventListener('click', () => {
+        window.location.href = href;
+      });
+    }
 
     if (prefix) {
       const prefixSpan = document.createElement('span');
@@ -79,7 +86,7 @@
     if (!container) return;
 
     if (!worldBossOk) {
-      const { wrap, textSpan } = buildBadge(WORLD_BOSS_BADGE_ID, null, '...');
+      const { wrap, textSpan } = buildBadge(WORLD_BOSS_BADGE_ID, null, '...', 'https://web.idle-mmo.com/combat/world-boss');
       container.prepend(wrap);
       worldBossBadgeEl = wrap;
       worldBossTextEl = textSpan;
