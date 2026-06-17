@@ -13,6 +13,14 @@
   "background": {
     "service_worker": "background.js"
   },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
   "content_scripts": [
     {
       "matches": ["*://*.idle-mmo.com/*"],
@@ -23,7 +31,7 @@
     },
     {
       "matches": ["*://*.idle-mmo.com/*"],
-      "js": ["content.js", "battle-calculator.js", "top-bar-widgets.js"],
+      "js": ["settings.js", "content.js", "battle-calculator.js", "top-bar-widgets.js"],
       "run_at": "document_idle"
     }
   ]

@@ -12,6 +12,7 @@ Extension Chrome d'amélioration de la QOL pour [IdleMMO](https://www.idle-mmo.c
 - 📊 **Bandeau de suivi** en haut de l'écran : statut Assaut, World Boss, Energizing Pool ("Pool UP").
 - 💰 **Prix net après taxe** affiché automatiquement sur le marché.
 - 🛒 **Vendor Check** dans l'inventaire pour comparer prix vendeur vs prix net du marché.
+- ⚙️ **Menu de paramètres** (clic sur l'icône de l'extension) pour activer/désactiver chaque fonctionnalité.
 - Et bien + dans les prochaines mises à jour
 
 ## Installation

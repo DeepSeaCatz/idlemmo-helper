@@ -183,11 +183,27 @@
   let pollIntervalId = null;
   let tickIntervalId = null;
   let observer = null;
+  let started = false;
 
   function teardown() {
     if (pollIntervalId) clearInterval(pollIntervalId);
     if (tickIntervalId) clearInterval(tickIntervalId);
     if (observer) observer.disconnect();
+    pollIntervalId = null;
+    tickIntervalId = null;
+    observer = null;
+  }
+
+  function removeBadges() {
+    [assaultBadgeEl, worldBossBadgeEl, poolBadgeEl].forEach((badge) => {
+      if (badge) badge.remove();
+    });
+    assaultBadgeEl = null;
+    assaultTextEl = null;
+    worldBossBadgeEl = null;
+    worldBossTextEl = null;
+    poolBadgeEl = null;
+    poolTextEl = null;
   }
 
   function poll() {
@@ -232,6 +248,9 @@
   }
 
   function start() {
+    if (started) return;
+    started = true;
+
     ensureBadges();
     poll();
 
@@ -242,9 +261,29 @@
     tickIntervalId = setInterval(render, TICK_INTERVAL_MS);
   }
 
+  function stop() {
+    if (!started) return;
+    started = false;
+    teardown();
+    removeBadges();
+  }
+
+  function applyFeatureState(features) {
+    if (features.topBarWidgets) {
+      start();
+    } else {
+      stop();
+    }
+  }
+
+  function init() {
+    window.IdleMMOHelperSettings.loadFeatureSettings(applyFeatureState);
+    window.IdleMMOHelperSettings.onFeatureSettingsChanged(applyFeatureState);
+  }
+
   if (document.body) {
-    start();
+    init();
   } else {
-    document.addEventListener('DOMContentLoaded', start);
+    document.addEventListener('DOMContentLoaded', init);
   }
 })();

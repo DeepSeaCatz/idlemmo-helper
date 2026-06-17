@@ -332,7 +332,10 @@
     );
   }
 
+  let enabled = true;
+
   function init() {
+    if (!enabled) return;
     if (document.getElementById(PANEL_ID)) return;
     const container = findContainer();
     if (!container) return;
@@ -340,10 +343,27 @@
     container.appendChild(buildPanel(state));
   }
 
+  function removePanel() {
+    const panel = document.getElementById(PANEL_ID);
+    if (panel) panel.remove();
+  }
+
+  function applyFeatureState(features) {
+    enabled = !!features.battleCalculator;
+    if (enabled) {
+      init();
+    } else {
+      removePanel();
+    }
+  }
+
   function start() {
     init();
     const observer = new MutationObserver(() => init());
     observer.observe(document.body, { childList: true, subtree: true });
+
+    window.IdleMMOHelperSettings.loadFeatureSettings(applyFeatureState);
+    window.IdleMMOHelperSettings.onFeatureSettingsChanged(applyFeatureState);
   }
 
   if (document.body) {
