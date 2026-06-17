@@ -343,13 +343,6 @@
   const CHARACTER_PANEL_CLASS = 'idlemmo-helper-character-panel';
   const CHARACTER_SWITCH_BUTTON_CLASS = 'idlemmo-helper-character-switch-button';
 
-  function toggleCharacterDropdown() {
-    const toggle = document.querySelector('[x-on\\:click*="characterDropdown"], [\\@click*="characterDropdown"]');
-    if (toggle) toggle.click();
-  }
-
-  let characterDropdownTriggered = false;
-
   function buildCharacterSwitchButtons() {
     const gameContainer = document.querySelector('#game-container');
     if (!gameContainer) return;
@@ -360,14 +353,7 @@
     if (!dropdown) return;
 
     const forms = dropdown.querySelectorAll('form[action*="/character/switch/"]');
-    if (!forms.length) {
-      if (!characterDropdownTriggered) {
-        // Character list is lazy-loaded; open the dropdown once to trigger it.
-        characterDropdownTriggered = true;
-        toggleCharacterDropdown();
-      }
-      return;
-    }
+    if (!forms.length) return;
 
     const panel = document.createElement('div');
     panel.className = `flex flex-wrap justify-end gap-2 mb-4 ${CHARACTER_PANEL_CLASS}`;
