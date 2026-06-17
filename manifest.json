@@ -8,7 +8,7 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "alarms", "notifications"],
   "host_permissions": ["https://france-idlemmo.fr/*"],
   "background": {
     "service_worker": "background.js"
@@ -31,7 +31,7 @@
     },
     {
       "matches": ["*://*.idle-mmo.com/*"],
-      "js": ["settings.js", "content.js", "battle-calculator.js", "top-bar-widgets.js"],
+      "js": ["settings.js", "content.js", "battle-calculator.js", "top-bar-widgets.js", "pets-timer.js"],
       "run_at": "document_idle"
     }
   ]

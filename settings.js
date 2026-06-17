@@ -37,6 +37,11 @@
       label: 'Calculateur Battle XP',
       description: "Affiche un calculateur d'XP sur la page de combat.",
     },
+    {
+      id: 'petsTimer',
+      label: 'Minuteur (page Pets)',
+      description: 'Lance un minuteur sur la page Pets et affiche une notification du navigateur à la fin.',
+    },
   ];
 
   function getDefaultFeatures() {
