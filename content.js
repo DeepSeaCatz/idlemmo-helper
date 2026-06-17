@@ -472,6 +472,23 @@
 
   let cacheLookupInProgress = false;
 
+  function extractCharacterId(actionUrl) {
+    const match = actionUrl.match(/(\d+)\/?$/);
+    return match ? match[1] : null;
+  }
+
+  function getCurrentCharacterId(liveForms) {
+    for (const form of liveForms) {
+      const submitButton = form.querySelector('button[type="submit"]');
+      const expr = submitButton?.getAttribute('x-bind:disabled') || submitButton?.getAttribute(':disabled');
+      if (!expr) continue;
+
+      const match = expr.match(/character\.id\s*===\s*(\d+)/);
+      if (match) return match[1];
+    }
+    return null;
+  }
+
   function buildCharacterSwitchButtons() {
     const gameContainer = document.querySelector('#game-container');
     if (!gameContainer) return;
@@ -480,6 +497,7 @@
     const liveForms = dropdown ? dropdown.querySelectorAll('form[action*="/character/switch/"]') : [];
 
     if (liveForms.length) {
+      const currentCharacterId = getCurrentCharacterId(liveForms);
       const formsByAction = new Map();
       const characters = Array.from(liveForms).map((form) => {
         const nameSpan = form.querySelector('span.font-bold');
@@ -487,7 +505,7 @@
         return {
           name: nameSpan ? nameSpan.textContent.trim() : 'Character',
           actionUrl: form.action,
-          disabled: !!form.querySelector('button[type="submit"]')?.disabled,
+          disabled: currentCharacterId !== null && extractCharacterId(form.action) === currentCharacterId,
         };
       });
 
