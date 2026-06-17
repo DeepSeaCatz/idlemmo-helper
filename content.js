@@ -387,44 +387,139 @@
 
   const CHARACTER_PANEL_CLASS = 'idlemmo-helper-character-panel';
   const CHARACTER_SWITCH_BUTTON_CLASS = 'idlemmo-helper-character-switch-button';
+  const CHARACTER_CACHE_KEY = 'idlemmo_helper_character_cache';
+
+  function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta && meta.content) return meta.content;
+
+    const input = document.querySelector('input[name="_token"]');
+    return input ? input.value : null;
+  }
+
+  function buildSwitchButton(name, disabled, onClick) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = `Switch to ${name}`;
+    button.className = `rounded bg-black/10 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black/40 disabled:opacity-40 disabled:cursor-not-allowed ${CHARACTER_SWITCH_BUTTON_CLASS}`;
+    button.disabled = disabled;
+    button.addEventListener('click', onClick);
+    return button;
+  }
+
+  function markCharacterAsCurrent(actionUrl, callback) {
+    chrome.storage.local.get(CHARACTER_CACHE_KEY, (data) => {
+      const cached = data[CHARACTER_CACHE_KEY];
+      if (!cached || !cached.length) {
+        callback();
+        return;
+      }
+
+      const updated = cached.map((c) => ({ ...c, disabled: c.actionUrl === actionUrl }));
+      chrome.storage.local.set({ [CHARACTER_CACHE_KEY]: updated }, callback);
+    });
+  }
+
+  function submitCachedSwitch(actionUrl) {
+    const token = getCsrfToken();
+    if (!token) return;
+
+    markCharacterAsCurrent(actionUrl, () => {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = actionUrl;
+      form.style.display = 'none';
+
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = '_token';
+      tokenInput.value = token;
+      form.appendChild(tokenInput);
+
+      const returnInput = document.createElement('input');
+      returnInput.type = 'hidden';
+      returnInput.name = 'return_to_current_page';
+      returnInput.value = 'true';
+      form.appendChild(returnInput);
+
+      document.body.appendChild(form);
+
+      if (form.requestSubmit) {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    });
+  }
+
+  function renderCharacterPanel(gameContainer, source, characters, onClickFor) {
+    const existing = document.querySelector(`.${CHARACTER_PANEL_CLASS}`);
+    if (existing) {
+      if (existing.dataset.source === 'live' || existing.dataset.source === source) return;
+      existing.remove();
+    }
+
+    const panel = document.createElement('div');
+    panel.className = `flex flex-wrap justify-end gap-2 mb-4 ${CHARACTER_PANEL_CLASS}`;
+    panel.dataset.source = source;
+
+    characters.forEach(({ name, actionUrl, disabled }) => {
+      panel.appendChild(buildSwitchButton(name, disabled, () => onClickFor(actionUrl)));
+    });
+
+    gameContainer.before(panel);
+  }
+
+  let cacheLookupInProgress = false;
 
   function buildCharacterSwitchButtons() {
     const gameContainer = document.querySelector('#game-container');
     if (!gameContainer) return;
 
-    if (document.querySelector(`.${CHARACTER_PANEL_CLASS}`)) return;
-
     const dropdown = document.querySelector('[x-show="characterDropdown"]');
-    if (!dropdown) return;
+    const liveForms = dropdown ? dropdown.querySelectorAll('form[action*="/character/switch/"]') : [];
 
-    const forms = dropdown.querySelectorAll('form[action*="/character/switch/"]');
-    if (!forms.length) return;
-
-    const panel = document.createElement('div');
-    panel.className = `flex flex-wrap justify-end gap-2 mb-4 ${CHARACTER_PANEL_CLASS}`;
-
-    forms.forEach((form) => {
-      const nameSpan = form.querySelector('span.font-bold');
-      const name = nameSpan ? nameSpan.textContent.trim() : 'Character';
-
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = `Switch to ${name}`;
-      button.className = `rounded bg-black/10 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black/40 disabled:opacity-40 disabled:cursor-not-allowed ${CHARACTER_SWITCH_BUTTON_CLASS}`;
-      button.disabled = !!form.querySelector('button[type="submit"]')?.disabled;
-
-      button.addEventListener('click', () => {
-        if (form.requestSubmit) {
-          form.requestSubmit();
-        } else {
-          form.submit();
-        }
+    if (liveForms.length) {
+      const formsByAction = new Map();
+      const characters = Array.from(liveForms).map((form) => {
+        const nameSpan = form.querySelector('span.font-bold');
+        formsByAction.set(form.action, form);
+        return {
+          name: nameSpan ? nameSpan.textContent.trim() : 'Character',
+          actionUrl: form.action,
+          disabled: !!form.querySelector('button[type="submit"]')?.disabled,
+        };
       });
 
-      panel.appendChild(button);
-    });
+      chrome.storage.local.set({ [CHARACTER_CACHE_KEY]: characters });
 
-    gameContainer.before(panel);
+      renderCharacterPanel(gameContainer, 'live', characters, (actionUrl) => {
+        const form = formsByAction.get(actionUrl);
+        if (!form) return;
+        markCharacterAsCurrent(actionUrl, () => {
+          if (form.requestSubmit) {
+            form.requestSubmit();
+          } else {
+            form.submit();
+          }
+        });
+      });
+      return;
+    }
+
+    if (document.querySelector(`.${CHARACTER_PANEL_CLASS}`)) return;
+    if (cacheLookupInProgress) return;
+    cacheLookupInProgress = true;
+
+    chrome.storage.local.get(CHARACTER_CACHE_KEY, (data) => {
+      cacheLookupInProgress = false;
+
+      const cached = data[CHARACTER_CACHE_KEY];
+      if (!cached || !cached.length) return;
+      if (document.querySelector(`.${CHARACTER_PANEL_CLASS}`)) return;
+
+      renderCharacterPanel(gameContainer, 'cache', cached, submitCachedSwitch);
+    });
   }
 
   function applySkillListReverse() {
